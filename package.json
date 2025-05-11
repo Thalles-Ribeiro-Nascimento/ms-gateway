@@ -1,0 +1,28 @@
+{
+  "name": "ms-gateway",
+  "version": "1.0.0",
+  "description": "API-Gateway",
+  "main": "../ms-gateway/src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon ../ms-gateway/src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Thalles-Ribeiro-Nascimento/ms-gateway.git"
+  },
+  "author": "Thalles Nascimento",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Thalles-Ribeiro-Nascimento/ms-gateway/issues"
+  },
+  "homepage": "https://github.com/Thalles-Ribeiro-Nascimento/ms-gateway#readme",
+  "dependencies": {
+    "amqplib": "^0.10.8",
+    "body-parser": "^2.2.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "nodemon": "^3.1.10"
+  }
+}
