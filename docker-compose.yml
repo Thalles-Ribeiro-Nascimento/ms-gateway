@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672" # Porta para comunicação com o RabbitMQ
+      - "15672:15672" # Porta para acessar o painel de gerenciamento do RabbitMQ
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - ms_gateway_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    ports:
+      - "3306:3306" # Porta para comunicação com o MySQL
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword # Senha do usuário root
+      MYSQL_DATABASE: mydatabase # Nome do banco de dados inicial
+      MYSQL_USER: myuser # Nome do usuário adicional
+      MYSQL_PASSWORD: mypassword # Senha do usuário adicional
+    volumes:
+      - mysql_data:/var/lib/mysql # Persistência de dados do MySQL
+    networks:
+      - ms_gateway_network
+
+volumes:
+  mysql_data:
+
+networks:
+  ms_gateway_network:
+    driver: bridge

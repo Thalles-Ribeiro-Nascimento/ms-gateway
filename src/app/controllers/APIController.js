@@ -1,52 +1,56 @@
 import dotenv from 'dotenv';
-import RabbitMQProvider from '../provider/rabbitmq/rabbitmq.provider.js'
+import RabbitMQProvider from '../provider/rabbitmq/rabbitmq.provider.js';
 
 dotenv.config();
 
 /**
  * Classe responsável por receber e processar as requisições HTTP
- * @author Thalles Nascimento
- * @class
  */
-class AlunoController{
+class APIController {
+  constructor() {
+    // Instancia e conecta ao RabbitMQ
+    this.rabbit = new RabbitMQProvider(process.env.RABBITMQ_URI);
+    this.rabbit.connect().catch(error => {
+      console.error('Falha ao conectar ao RabbitMQ no controller:', error);
+    });
+
+    // Garante que os métodos mantenham o 'this'
+    this.store = this.store.bind(this);
+  }
 
   /**
-   * Construtor para injeção da instância da classe AlunoRepository
-   * @constructor
+   * Insere uma mensagem na fila RabbitMQ
+   * @param {Object} req - Requisição HTTP
+   * @param {Object} res - Resposta HTTP
    */
-    constructor(){
-      this.rabbitMQ = new RabbitMQProvider(process.env.RABBITMQ_URI)
-      this.rabbitMQ.connect()
+  async store(req, res) {
+    const payload = req.body;
+    const queue = process.env.RABBITMQ_QUEUE;
+
+    // Verifica se o body foi fornecido
+    if (!payload || Object.keys(payload).length === 0) {
+      return res.status(400).json({ error: 'O corpo da requisição é obrigatório' });
     }
 
-    /**
-     * Método para inserir um registro no Banco de Dados
-     * @param {JSON | Number | String | List} req É a Requisão do Cliente: Body/Headers
-     * @param {JSON | Number | String | List} res É a Resposta do Servidor
-     */
-    async store(req, res){
-        const queue = req.body.queue;
-        const message = req.body.message;
+    // Converte objeto em string para envio
+    const message = JSON.stringify(payload);
 
-        if (!queue || !message) {
-            return res.status(400).json({ error: 'A fila e a mensagem são obrigatórias' });
-        }
-        
-        try {
-            await this.rabbitMQ.sendToQueue(queue, message);
-            res.status(200).json({ success: true, message: 'Mensagem enviada com sucesso' });
-        } catch (error) {
-            console.error('Erro ao enviar mensagem para a fila:', error);
-            res.status(500).json({ error: 'Erro ao enviar mensagem para a fila' });
-        }     
-        
+    try {
+      await this.rabbit.sendToQueue(queue, message);
+      return res.status(200).json({ success: true});
+    } catch (error) {
+      console.error('Erro ao enviar mensagem para a fila:', error);
+      return res.status(500).json({ error: 'Erro ao enviar mensagem para a fila' });
     }
+  }
 
-
+  /**
+   * Testa rota GET
+   */
+//   async test(req, res) {
+//     return res.status(200).json({ success: true, message: 'Rota GET funcionando corretamente' });
+//   }
 }
 
-/**
- * Padrão Singleton -> Designer Patterns
- *      Foi criada e exportada apenas uma instância da classe AlunoController
- *  */ 
-export default new AlunoController()
+// Exporta instância única com métodos já vinculados
+export default new APIController();
